@@ -7,6 +7,7 @@
 #include "progressnotifier.h"
 #include "drawablemesh.h"
 #include "objreader.h"
+#include "KDTree\kdtree.h"
 
 
 class MainWindow : public QMainWindow
@@ -30,6 +31,7 @@ protected slots:
     void loadMesh();
     void saveObj();
     void chooseColor();
+    void nearestPoint();
     void normalMapON();
     void normalMapOFF();
 };

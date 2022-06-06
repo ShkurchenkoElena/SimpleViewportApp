@@ -27,6 +27,7 @@ MainWindow::MainWindow(Viewport *viewport, QWidget *parent)
     fileMenu->addAction("Load mesh", this, &MainWindow::loadMesh, QKeySequence::Open);
     fileMenu->addAction("Save", this, &MainWindow::saveObj,  Qt::CTRL + Qt::Key_S);
     toolMenu->addAction("Color", this, &MainWindow::chooseColor, Qt::CTRL + Qt::Key_C);
+    toolMenu->addAction("Nearest point", this, &MainWindow::nearestPoint, Qt::CTRL + Qt::Key_P);
     toolMenu->addAction("Normal map ON", this, &MainWindow::normalMapON, Qt::CTRL + Qt::Key_Y);
     toolMenu->addAction("Normal map OFF", this, &MainWindow::normalMapOFF, Qt::CTRL + Qt::Key_N);
    // toolMenu->addAction(normalMap);
@@ -139,7 +140,51 @@ void MainWindow::chooseColor()
  m_viewport->addObject(m_drawableMesh);
  m_viewport->update();
 }
+void MainWindow::nearestPoint()
+{
+    bool bOk;
+       float x = float(QInputDialog::getDouble( 0, "Input","x",0,-2147483647,2147483647,1,&bOk));
+       if (!bOk) {
+           x=0;
 
+       }
+       float y = float(QInputDialog::getDouble( 0, "Input","y",0,-2147483647,2147483647,1,&bOk));
+       if (!bOk) {
+           y=0;
+       }
+       float z = float(QInputDialog::getDouble( 0, "Input","z",0,-2147483647,2147483647,1,&bOk));
+       if (!bOk) {
+           z=0;
+
+       }
+       QVector3D point={x,y,z};
+       KDTree::Node *node = KDTree::buildTree(objData.m_vertices);
+       float nearestPointDistSquared = 0.0;
+       int index=node->findNearestPointInd(point,objData.m_vertices , &nearestPointDistSquared);
+       delete node;
+       node = nullptr;
+
+       QVector<float> color=convertColorVector();
+       color[index*3]=1;
+       color[index*3+1]=0;
+       color[index*3+2]=0;
+       QVector<int> polygonVertexIndices = MeshTools::buildPolygonVertexIndicesVector(objData.m_polygonVertexIndices);
+       QVector<int> polygonNormalIndices = MeshTools::buildPolygonVertexIndicesVector(objData.m_polygonNormalIndices);
+       QVector<int> polygonStart = MeshTools::buildPolygonStartVector(objData.m_polygonVertexIndices);
+       m_viewport->makeCurrent();
+       if (m_drawableMesh) {
+           m_viewport->removeObject(m_drawableMesh);
+           delete m_drawableMesh;
+       }
+
+    //QVector3D color(1.0,1.0,0.0);
+
+    m_drawableMesh = new DrawableMesh(color,objData.m_vertices, polygonVertexIndices, polygonStart, objData.m_normals, polygonNormalIndices);
+    //m_viewport->setRotationAngles(QVector3D(90, 0, 0));
+    m_viewport->addObject(m_drawableMesh);
+    m_viewport->update();
+
+}
 
 void MainWindow::normalMapON()
 {
