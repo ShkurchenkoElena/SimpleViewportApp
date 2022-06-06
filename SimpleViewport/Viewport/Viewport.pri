@@ -13,3 +13,9 @@ SOURCES += \
     $$PWD/viewport.cpp
 
 }
+
+HEADERS += \
+    $$PWD/navigation.h
+
+SOURCES += \
+    $$PWD/navigation.cpp
